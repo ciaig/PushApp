@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PushApp</string>
+    <string name="push_button">Push</string>
+</resources>
