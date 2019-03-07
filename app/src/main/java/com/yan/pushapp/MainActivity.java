@@ -19,6 +19,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeoutException;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,24 +34,24 @@ public class MainActivity extends AppCompatActivity {
         startListen();
     }
 
-    public void Push(View view){
+    public void Push(String title,String content){
         final String CHANNEL_ID = "channel_id_1";
         final String CHANNEL_NAME = "channel_name_1";
         final NotificationManager mNotificationManager = (NotificationManager)
                 getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder= new NotificationCompat.Builder(this,CHANNEL_ID);
-        builder.setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("Push")
-                .setContentText("hello world")
+        builder.setSmallIcon(R.mipmap.timg)
+                .setContentTitle(title)
+                .setContentText(content)
                 .setAutoCancel(true);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
                     CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(notificationChannel);
-            mNotificationManager.notify(1, builder.build());
+            mNotificationManager.notify(LocalDateTime.now().getNano(), builder.build());
         }else {
             mNotificationManager.notify(1, builder.build());
-            Intent intent = new Intent(Intent.ACTION_DEFAULT);
+            Intent intent = new Intent(this, MainActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
             builder.setFullScreenIntent(pendingIntent, true);
             mNotificationManager.notify("closed",1, builder.build());
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                     Consumer consumer = new DefaultConsumer(channel){
                         @Override
                         public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                            System.out.println(new String(body));
+                            Push("test",new String(body));
                         }
                     };
                     channel.basicConsume("GMessage", true, consumer);
