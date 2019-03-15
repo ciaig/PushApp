@@ -18,6 +18,9 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeoutException;
@@ -94,14 +97,22 @@ public class ConsumerService extends Service {
                 try {
                     connection = factory.newConnection();
                     channel = connection.createChannel();
-                    channel.queueDeclare("GMessage", true, false, false, null);
+                    channel.queueDeclare("YMessage", true, false, false, null);
                     Consumer consumer = new DefaultConsumer(channel){
                         @Override
                         public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                            Push("test",new String(body));
+                            String json = new String(body);
+                            try {
+                                JSONObject jsonObject = new JSONObject(json);
+                                String title = jsonObject.getString("title");
+                                String content = jsonObject.getString("content");
+                                Push(title,content);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         }
                     };
-                    channel.basicConsume("GMessage", true, consumer);
+                    channel.basicConsume("YMessage", true, consumer);
                 } catch (IOException | TimeoutException e) {
                     e.printStackTrace();
                 }
